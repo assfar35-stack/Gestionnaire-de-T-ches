@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Gestionnaire de Tâches</h1>
+        <p>Tâches restantes : <span id="counter">0</span></p>
+      </header>
+
+      <form id="task-form">
+        <input type="text" placeholder="Nouvelle tâche..." />
+        <button type="submit">Ajouter</button>
+      </form>
+
+      <nav id="filters">
+        <button class="btn-filter active">Toutes</button>
+        <button class="btn-filter">Actives</button>
+        <button class="btn-filter">Terminées</button>
+      </nav>
+
+      <ul id="todo-list"></ul>
+    </div>
+
+    <script>
+      let tasks = [
+        { id: 0, title: "Open the project", completed: false },
+        { id: 1, title: "Start the project", completed: true },
+        { id: 2, title: "Finish the project", completed: false },
+      ];
+
+      const taskForm = document.getElementById("task-form");
+      const taskInput = taskForm.querySelector("input");
+      const todoList = document.getElementById("todo-list");
+      const counter = document.getElementById("counter");
+      const filterButtons = document.querySelectorAll(".btn-filter");
+
+      let currentFilter = "all";
+
+      function afficherTaches() {
+        todoList.innerHTML = "";
+
+        for (var i = 0; i < tasks.length; i++) {
+          var task = tasks[i];
+
+          if (currentFilter === "active" && task.completed === true) continue;
+          if (currentFilter === "completed" && task.completed === false)
+            continue;
+
+          var li = document.createElement("li");
+          if (task.completed === true) {
+            li.className = "completed";
+          }
+
+          var checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = task.completed;
+          checkbox.addEventListener(
+            "change",
+            (function (t) {
+              return function () {
+                changerEtat(t.id);
+              };
+            })(task),
+          );
+
+          var span = document.createElement("span");
+          span.textContent = task.title;
+
+          var btnSupp = document.createElement("button");
+          btnSupp.textContent = "x";
+          btnSupp.addEventListener(
+            "click",
+            (function (t) {
+              return function () {
+                supprimerTache(t.id);
+              };
+            })(task),
+          );
+
+          li.appendChild(checkbox);
+          li.appendChild(span);
+          li.appendChild(btnSupp);
+          todoList.appendChild(li);
+        }
+
+        var count = 0;
+        for (var j = 0; j < tasks.length; j++) {
+          if (tasks[j].completed === false) count++;
+        }
+        counter.textContent = count;
+      }
+
+      function changerEtat(id) {
+        for (var i = 0; i < tasks.length; i++) {
+          if (tasks[i].id === id) {
+            tasks[i].completed = !tasks[i].completed;
+            break;
+          }
+        }
+        afficherTaches();
+      }
+
+      function supprimerTache(id) {
+        var newTasks = [];
+        for (var i = 0; i < tasks.length; i++) {
+          if (tasks[i].id !== id) {
+            newTasks.push(tasks[i]);
+          }
+        }
+        tasks = newTasks;
+        afficherTaches();
+      }
+
+      taskForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var title = taskInput.value.trim();
+        if (title === "") return;
+        tasks.push({ id: Date.now(), title: title, completed: false });
+        taskInput.value = "";
+        afficherTaches();
+      });
+
+      filterButtons[0].addEventListener("click", function () {
+        filterButtons[0].classList.add("active");
+        filterButtons[1].classList.remove("active");
+        filterButtons[2].classList.remove("active");
+        currentFilter = "all";
+        afficherTaches();
+      });
+
+      filterButtons[1].addEventListener("click", function () {
+        filterButtons[0].classList.remove("active");
+        filterButtons[1].classList.add("active");
+        filterButtons[2].classList.remove("active");
+        currentFilter = "active";
+        afficherTaches();
+      });
+
+      filterButtons[2].addEventListener("click", function () {
+        filterButtons[0].classList.remove("active");
+        filterButtons[1].classList.remove("active");
+        filterButtons[2].classList.add("active");
+        currentFilter = "completed";
+        afficherTaches();
+      });
+
+      afficherTaches();
+    </script>
+  </body>
+</html>
